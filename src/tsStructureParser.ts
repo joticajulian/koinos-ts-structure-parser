@@ -372,7 +372,19 @@ export function buildType(t:ts.TypeNode,path:string):TypeModel{
         }
         return res;
     }
-    throw new Error("Case not supported: "+t.kind)
+
+    /**
+     * The parser throws an error here if the argument or
+     * return type contains a "null" type. Example:
+     *
+     *   myFunction(): my_type | null { ... }
+     *
+     * A quick solution was to return null instead of
+     * throwing an error
+     */
+
+    return null;
+    // throw new Error("Case not supported: " + t.kind);
 }
 function parseQualified2(n:any):string{
     if (!n.name){
