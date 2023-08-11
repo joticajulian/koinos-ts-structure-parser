@@ -296,7 +296,15 @@ export function parseArg(n:ts.Expression):any{
             return parseArg(bin.left)+parseArg(bin.right)
         }
     }
-    throw new Error("Unknown value in annotation")
+
+    /**
+     * Resolved as string to avoid the error when the constructor
+     * has special object definitions.
+     * Julian.
+     */
+    // throw new Error("Unknown value in annotation");
+    var l:ts.StringLiteral=<ts.StringLiteral>n;
+    return l.text
 }
 
 function parseName(n:ts.Expression):string{
