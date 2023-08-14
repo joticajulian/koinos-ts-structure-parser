@@ -78,9 +78,9 @@ export function parseStruct(content:string,modules:{[path:string]:Module},mpth:s
             };
             module.imports2.push({
                 dependency: y.moduleSpecifier.text,
-                modules: y.importClause.namedBindings.elements.map(e => {
+                modules: y.importClause.namedBindings ? y.importClause.namedBindings.elements.map(e => {
                   return e.name.escapedText;
-                }),
+                }) : [],
             });
         }
         if (x.kind==ts.SyntaxKind.TypeAliasDeclaration){
