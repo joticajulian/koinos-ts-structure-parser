@@ -12,7 +12,7 @@ import {ArrayType} from "ts-structure-model";
 import {Annotation} from "ts-structure-model";
 import {Constraint} from "ts-structure-model";
 import {FieldModel} from "ts-structure-model";
-import {Module} from "ts-structure-model";
+import {Module as OldModule} from "ts-structure-model";
 import {MethodModel} from "ts-structure-model";
 import {ParameterModel} from "ts-structure-model";
 import {UnionType} from "ts-structure-model";
@@ -24,9 +24,16 @@ function parse(content:string){
 }
 var fld=tsm.Matching.field();
 
+export interface Module extends OldModule {
+    imports2: {
+        dependency: string;
+        modules: string[];
+    }[];
+}
+
 export function parseStruct(content:string,modules:{[path:string]:Module},mpth:string):Module{
     var mod=parse(content);
-    var module:Module={classes:[],aliases:[],enumDeclarations:[],imports:{},name:mpth}
+    var module:Module={classes:[],aliases:[],enumDeclarations:[],imports:{},imports2:[],name:mpth}
     modules[mpth]=module;
     var currentModule:string=null;
     tsm.Matching.visit(mod,x=>{
@@ -55,6 +62,26 @@ export function parseStruct(content:string,modules:{[path:string]:Module},mpth:s
                 var mod = parseStruct(cnt, modules, absPath);
             }
             module.imports[namespace]=modules[absPath];
+        }
+        if (x.kind == ts.SyntaxKind.ImportDeclaration) {
+            const y = x as unknown as {
+                moduleSpecifier: {text: string};
+                importClause: {
+                    namedBindings?: {
+                        elements: {
+                            name: {
+                                escapedText: string;
+                            }
+                        }[];
+                    };
+                };
+            };
+            module.imports2.push({
+                dependency: y.moduleSpecifier.text,
+                modules: y.importClause.namedBindings.elements.map(e => {
+                  return e.name.escapedText;
+                }),
+            });
         }
         if (x.kind==ts.SyntaxKind.TypeAliasDeclaration){
             var u=<ts.TypeAliasDeclaration>x;
